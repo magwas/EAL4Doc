@@ -1,0 +1,162 @@
+#!/usr/bin/python
+
+import sys
+import subprocess
+import re
+
+
+class Method:
+	def __repr__(self):
+		return "%u (%u) -> %u : %s (%s)"%(
+			getattr(self,'start',-1),
+			getattr(self,'headerpos',-1),
+			getattr(self,'end',-1),
+			getattr(self,'name',-1),
+			self.__hash__()
+		)
+	def __hash__(self):
+		return hash(self.name)
+	def __eq__(self,other):
+		return hash(self) == hash(other)
+
+def lastsmaller(l,n):
+	#finds the last item in list l whicch is smaller than n
+	last=0
+	for i in l:
+		if i >= n:
+			return last
+		last = i
+	return last
+
+def getmethlist(fname):
+	f = open(fname)
+	starters=[]
+	endbraces=[0]
+	endregions=[0]
+	counter = 0
+	for line in f:
+		counter += 1
+		if re.search(r'[^/]*(private|public)',line):
+			m=Method()
+			m.name=line.strip()
+			m.headerpos=counter
+			starters.append(m)
+			endbraces.append(counter)
+		if re.search(r'}',line):
+			endbraces.append(counter)
+		if re.search(r'#endregion',line):
+			endregions.append(counter)
+#	endbraces.append(counter)
+	
+	methodlist=[]
+	lastmethod=None
+	for meth in starters:
+		currmethod=meth
+		lastregend=lastsmaller(endregions,meth.headerpos)
+		lastend = None
+		if lastmethod and lastmethod.headerpos < lastregend:
+			lastend = lastsmaller(endbraces,lastregend)
+		else:
+			lastend=lastsmaller(endbraces,meth.headerpos)
+		currmethod.start=lastend+1
+		if lastmethod:
+			lastmethod.end=lastend
+		methodlist.append(currmethod)
+		lastmethod=currmethod
+	
+	lastregend=lastsmaller(endregions,endbraces[-1])
+	if lastmethod and lastmethod.headerpos < lastregend:
+		lastmethod.end = lastsmaller(endbraces,lastregend)
+	elif lastmethod:
+		lastmethod.end=endbraces[-1]
+	return methodlist
+	
+
+def findmethods(ml,linerange):
+	# ml is a method list
+	# linerange is a list of [startpos,length]
+	# returns the list of methods affected by the range
+	startline=int(linerange[0])+3
+	endline=startline+int(linerange[1])-6
+	rl = []
+	for meth in ml:
+		if (startline <= meth.start and endline >= meth. start) or ( startline <= meth.end and endline >= meth.start):
+			rl.append(meth)
+	return rl
+		
+
+def printmeth(meth):
+		print "<method>%s</method>"%(re.sub("<","&lt;",meth.name))
+
+def summary(old,new):
+	old=set(old)
+	new=set(new)
+	#print "old:",old
+	#print "new:",new
+	print "<new>"
+	for meth in new.difference(old):
+		printmeth(meth)
+	print "</new>"
+	print "<deleted>"
+	for meth in old.difference(new):
+		printmeth(meth)
+	print "</deleted>"
+	print "<modified>"
+	for meth in old.intersection(new):
+		printmeth(meth)
+	print "</modified>"
+	
+mlfrom = getmethlist(sys.argv[-2])
+mlto = getmethlist(sys.argv[-1])
+
+l=sys.argv[1:]
+k=['/usr/bin/diff']
+k.extend(l)
+sys.stderr.write("running %s\n"%(k,))
+p=subprocess.Popen(k,stdout=subprocess.PIPE)
+
+output=p.communicate()[0]
+hadpatch=False
+oldlineno=None
+newlineno=None
+print '<patchfile name="%s">'%(sys.argv[3].split('\t')[0],)
+for line in output.split('\n'):
+	if len(line) >2 and line[:2] == '@@':
+		if hadpatch:
+			print "</diff></patch>"
+		hadpatch=True
+		print '<patch>'
+		vals=re.search("-([0-9]*),([0-9]*) \+([0-9]*),([0-9]*)",line)
+		if vals:
+			vg = vals.groups()
+			#old=findmethods(mlfrom,vg[:2])
+			#new=findmethods(mlto,vg[2:])
+			#summary(old,new)
+			print '<diff oldfrom="%s" oldlen="%s" newfrom="%s" newlen="%s">'%vg
+			oldlineno=int(vg[2])-1
+			newlineno=int(vg[2])-1
+		else:
+			print "<diff>"
+		print line
+	else:
+		if oldlineno is not None:
+			if len(line) < 1:
+				oldlineno += 1
+				newlineno += 1
+				print '<line oldlineno="%d" newlineno="%d" type=" "></line>'%(oldlineno,newlineno)
+			else:
+				if line[0] == ' ':
+					oldlineno += 1
+					newlineno += 1
+				elif line[0] == '+':
+					newlineno += 1
+				elif line[0] == '-':
+					oldlineno += 1
+				print '<line oldlineno="%d" newlineno="%d" type="%s"><![CDATA[%s]]></line>'%(oldlineno,newlineno,line[0],line[1:])
+		else:
+			print "<otherstuff><![CDATA[%s]]></otherstuff>"%(line,)
+
+if hadpatch:
+	print "</diff></patch>"
+
+print "</patchfile>"

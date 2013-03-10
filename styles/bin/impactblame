@@ -1,0 +1,6 @@
+#!/bin/bash
+set -xe
+. tmp/svnvers
+
+./styles/bin/blamer $latestcertified $freshestsrc $latestrev $freshestrev -r $latestrev:$freshestrev --xml <tmp/inputs/impact.summary >tmp/inputs/blaming.xml
+

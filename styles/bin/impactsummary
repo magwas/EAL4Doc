@@ -1,0 +1,8 @@
+#!/bin/bash
+set -xe
+. tmp/svnvers
+
+(echo "<impact module=\"\" latestcertified=\"$latestcertified\" freshestsrc=\"$freshestsrc\" latestrev=\"$latestrev\" freshestrev=\"$freshestrev\">"
+svn diff --summarize --xml $latestcertified $freshestsrc |sed 's/^<?xml.*//'
+echo "</impact>" )>tmp/inputs/impact.summary
+

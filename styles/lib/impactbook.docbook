@@ -1,0 +1,12 @@
+<!DOCTYPE book [
+<!ENTITY byfiles SYSTEM "impact.byfilep.docbook">
+<!ENTITY diff SYSTEM "diffp.docbook">
+<!ENTITY bugdoc SYSTEM "bugdoc.docbook">
+<!ENTITY impactlog SYSTEM "impactlog.docbook">
+]>
+<set>
+&bugdoc;
+&byfiles;
+&diff;
+&impactlog;
+</set>

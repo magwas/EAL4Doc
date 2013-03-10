@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<style>
+	<export target="tmp/inputs/archirich.xml" keep="true"/>
+</style>

@@ -1,0 +1,7 @@
+#!/bin/bash
+set -x
+. tmp/svnvers
+
+(echo "<thediff>";svn diff --diff-cmd styles/bin/csdiff $latestcertified $freshestsrc;echo "</thediff>") |
+	tee tmp/inputs/diff0.xml |iconv -f utf-8 -t utf-8//IGNORE>tmp/inputs/diff.xml
+

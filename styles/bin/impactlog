@@ -1,0 +1,6 @@
+#!/bin/bash
+set -xe
+. tmp/svnvers
+
+svn log -r $latestrev:$freshestrev --xml $freshestsrc |sed 's/#\([0-9]*\)/<bug id="\1">#\1<\/bug>/g' >tmp/inputs/impact_log.xml
+

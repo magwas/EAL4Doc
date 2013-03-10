@@ -1,0 +1,9 @@
+This is a documentation generator for CC EAL4 certification.
+It has been succesfully used for certification of two game servers.
+
+For your project I reccommend to start looking at styles/etc/rules.mk
+to figure out how to create a working Makefile. Sorry, I could not provide one
+due to NDA. Maybe I'll come up with some small mockup project in the future,
+but don't hold your breath.
+
+

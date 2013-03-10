@@ -1,0 +1,21 @@
+#!/bin/bash
+set -xe
+
+#args: <destdir> <stablevername>
+#eg: sourcecode freshestsrc
+. tmp/svnvers
+
+
+stablever=`set |grep $2=|sed 's/^.*=//'`
+
+svn update -q $stablever
+
+rm -rf $1
+mkdir $1
+for i in `cat source/dirlist`
+do
+  ln -s $stablever/$i $1/$i
+done
+
+doxygen styles/etc/Doxyfile.$2 >tmp/errors.$2 2>&1
+

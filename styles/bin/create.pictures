@@ -1,0 +1,5 @@
+#!/bin/bash
+set -xe
+
+mkdir pics 
+/opt/Archi/Archi -load $PWD/source/model.archimate -targetdir $PWD -runstyle $PWD/styles/etc/pictures.style -exit

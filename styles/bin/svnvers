@@ -1,0 +1,25 @@
+#!/bin/bash
+set -x
+reporoot=`svn info|grep "^Repository Root:"|sed 's/^.*: //'`
+
+# figure out freshest source and freshest deployment
+# if they do not correspond, then panic
+# pull in freshest deployment, source and modell stable
+# jump to modell stable stable
+# set up linkpark to source
+# set up doc dirs in docs/tags/deployment (developers_evidence and deliverable_docs)
+# set up links and permissions in that stable (generated points todevelopers_evidence )
+# do the build
+# commit everything
+
+touch tmp/inputs/deploylist.xml
+
+echo "export reporoot=$reporoot" >tmp/svnvers
+echo "export freshestdoc=$freshestdoc" >>tmp/svnvers
+echo "export freshestbin=$freshestbin" >>tmp/svnvers
+echo "export freshestsrc=$freshestsrc" >>tmp/svnvers
+echo "export freshestdocbuild=$freshestdocbuild" >>tmp/svnvers
+echo "export latestcertified=$latestcertified" >>tmp/svnvers
+echo "export latestrev=$latestrev" >>tmp/svnvers
+echo "export freshestrev=$freshestrev" >>tmp/svnvers
+
